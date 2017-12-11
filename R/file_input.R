@@ -6,6 +6,7 @@
 #' @examples
 #' get_dir('/data/flowData', 'FCS')
 #' get_dir('../data/fcs', 'lmd')
+#' @export
 get_dir <- function(path, ext) {
 	l = lapply(list.dirs(path, full.names=FALSE, recursive=FALSE), function(i) {
 		filelist = list.files(file.path(path, i), pattern=ext, full.names=FALSE)
@@ -78,9 +79,12 @@ read_files <- function(file_info, threads=1, simple_marker_names=TRUE) {
 #' @examples
 #' file_info = get_dir('../data', 'fcs')
 #' file_info = remove_small_cohorts(file_info, 20)
-remove_small_cohorts <- function (fcs_info, minsize=50) {
+remove_small_cohorts <- function (fcs_info, minsize) {
 	## downsampling for flowsom to bite sized chunks
 	# set a minimum size to exclude very small cohorts first
+	if (is.na(minsize)) {
+		return(fcs_info)
+	}
 	chosen_groups = c()
 	file_groups = unique(fcs_info[,'group'])
 	for (g in file_groups) {
@@ -154,7 +158,7 @@ filter_flowFrame_majority <- function(fcs_info, threshold) {
 	occur_hist = occur_hist / nrow(fcs_info)
 	print("Marker occurrences:\n")
 	print(occur_hist)
-	return(filter_flowFrame_markers(fcs_info, selection))
+	return(list(fcs_info=filter_flowFrame_markers(fcs_info, selection), selection=selection))
 }
 
 #' Get distribution of marker channels across whole dataset.
@@ -182,6 +186,73 @@ select_set <- function(file_info, set) {
 	return(file_info[file_info[,'set'] == set,])
 }
 
+#' Remove duplicates from file matrix.
+#'
+#' @param File matrix as output by get_dir()
+#' @return File matrix with duplicates removed. All occurrences are removed.
+remove_duplicates <- function(file_info) {
+	# remove duplicates until we have a better idea
+	file_freq = table(unlist(rownames(file_info)))
+	file_freq = file_freq[file_freq > 1 ]
+	if (length(file_freq) > 0) {
+		duplicates = names(file_freq)
+		for (d in duplicates) {
+			print(sprintf("Removed duplicate %s", d))
+			g = grep(d, rownames(file_information))
+			file_information[g[1], 'filepath'] = NA
+			file_information[g[2], 'filepath'] = NA
+		}
+		file_info = file_info[!is.na(file_info[,'filepath']),]
+	}
+	return(file_info)
+}
+
+limit_size <- function(file_info, group_size) {
+	if (is.na(group_size)) {
+		return(file_info)
+	}
+	tf_subset = matrix(ncol=ncol(file_info), nrow=0)
+	for (g in unique(tf1[,'group'])) {
+		tf_subset = rbind(tf_subset, head(file_info[file_info[,'group'] == g,], n=group_size))
+	}
+	return(tf_subset)
+}
+
+#' Read and preprocess file structure
+#'
+#' Convinient wapper to extract a single set without duplicates from directory file structure.
+#'
+#' @inheritParams get_dir
+#' @inheritParams select_set
+#' @return File matrix with specified set and no duplicates.
+#' @export
+create_file_info <- function(path, ext, set) {
+	file_info = get_dir(path, ext)
+	if (is.null(file_info)) {
+		print(sprintf("No files found in given directory %s", getwd()))
+		return(file_info)
+	}
+	file_info = select_set(file_info, set=set)
+	file_info = remove_duplicates(file_info)
+	return(file_info)
+}
+
+#' Load and filter single file info entry
+#'
+#' @param file_row File info row from a file matrix.
+#' @param selection Marker names selected from flowframe.
+#' @return File row or NULL if marker name not in flowframe.
+#' @export
+process_single <- function(file_row, selection) {
+	file_row = read_file(file_row)
+	file_row = modify_selection_row(file_row, selection)
+	if (any(is.na(file_row))) {
+		cat(paste("Skipping", file_row['filepath'], "because NA encountered."))
+		return(NULL)
+	}
+	return(file_row)
+}
+
 #' Generate file matrix from directory
 #'
 #' A file matrix contains information about each file included in the structure
@@ -200,14 +271,46 @@ select_set <- function(file_info, set) {
 #' @inheritParams read_files
 #' @inheritParams select_set
 #' @inheritParams filter_flowFrame_markers
-#' @inheritParams remove_small_cohorts
+#' @param group_size Size of returned groups, if defined, each cohort will have this size. Smaller cohorts will be discarded.
 #' @return File matrix with loaded and filtered datasets.
 #' @export
-process_dir <- function(path, ext='LMD', set=1, threshold=0.90, group_size=50, threads=1, simple_marker_names=FALSE) {
-	file_info = get_dir(path, ext)
-	file_info = select_set(file_info, set=set)
+process_dir <- function(path, ext='LMD', set=1, threshold=0.90, group_size=NA, threads=1, simple_marker_names=FALSE) {
+	file_info = create_file_info(path, ext, set)
+	if (is.null(file_info)) {
+		return(file_info)
+	}
 	file_info = read_files(file_info, threads=threads, simple_marker_names=simple_marker_names)
-	file_info = filter_flowFrame_majority(file_info, threshold)
+	ret = filter_flowFrame_majority(file_info, threshold)
+	file_info = ret$file_info
+	selection = ret$selection
 	file_info = remove_small_cohorts(file_info, group_size)
-	return(file_info)
+	file_info = limit_size(file_info, group_size)
+	sel_fun = function(x) { !grepl("LIN", x) }
+	trans_fun = flowCore::logTransform(transformationId="log10-transformation", logbase=10, r=1, d=1)
+	# disable threading for now, since it requires really a lot of ram
+	file_info = transform_ffs(file_info, sel_fun, trans_fun, threads=1)
+	return(list(file_info=file_info, selection=selection))
+}
+
+transform_ff <- function(ff, sel_fun, trans_fun) {
+	markernames = flowCore::colnames(ff)
+	trans_markers = markernames[sel_fun(markernames)]
+	transform_list = flowCore::transformList(trans_markers, trans_fun)
+	ff = flowCore::transform(ff, transform_list)
+	return(ff)
+}
+
+#' Transform flowcytometric marker channels.
+#'
+#' Apply a transformation function to the channels specified by the selection function.
+#'
+#' @param ffs File matrix with loaded flow frames.
+#' @param sel_fun Selection function to determine transform application, which returns for an input name either TRUE or FALSE
+#' @param trans_fun Transformation function, which will be applied.
+#' @param threads Number of cpu threads.
+#' @return File Matrix with transformed flow frames.
+transform_ffs <- function(ffs, sel_fun, trans_fun, threads=1) {
+	flows = parallel::mclapply(ffs[,'fcs'], function(x) { transform_ff(x, sel_fun, trans_fun)}, mc.cores=threads)
+	ffs[,'fcs'] = flows
+	return(ffs)
 }

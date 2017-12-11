@@ -5,7 +5,7 @@
 \title{Generate file matrix from directory}
 \usage{
 process_dir(path, ext = "LMD", set = 1, threshold = 0.9,
-  group_size = 50, threads = 1, simple_marker_names = FALSE)
+  group_size = NA, threads = 1, simple_marker_names = FALSE)
 }
 \arguments{
 \item{path}{Top directory which contains the lower directories serving as different groups.}
@@ -13,6 +13,8 @@ process_dir(path, ext = "LMD", set = 1, threshold = 0.9,
 \item{ext}{File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)}
 
 \item{set}{Specifies set which will be returned.}
+
+\item{group_size}{Size of returned groups, if defined, each cohort will have this size. Smaller cohorts will be discarded.}
 
 \item{threads}{Number of cpu threads used in file reading.}
 
