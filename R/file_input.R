@@ -26,12 +26,15 @@ get_dir <- function(path, ext) {
   	return(files)
 }
 
-read_file <- function(file_row) {
-	f = read.FCS(as.character(file_row[['filepath']]), dataset=1)
+read_file <- function(file_row, simple_marker_names) {
+	f = flowCore::read.FCS(as.character(file_row[['filepath']]), dataset=1)
 	# use simplified markernames, this might be an inappropriate simplification
-	m = strsplit(markernames(f), '-')
-	newn = sapply(m, function(x) { x[[1]] } )
-	flowCore::colnames(f) = newn
+	m = flowCore::markernames(f)
+	if (simple_marker_names) {
+		m = strsplit(m, '-')
+		m = sapply(m, function(x) { x[[1]] } )
+	}
+	flowCore::colnames(f) = m
 
 	return (c(file_row, fcs=f))
 }
@@ -45,9 +48,9 @@ read_file <- function(file_row) {
 #' @examples
 #' file_matrix = get_dir('/data', 'fcs')
 #' read_files(file_matrix)
-read_files <- function(file_info, threads=1, simple_marker_names=TRUE) {
+read_files <- function(file_info, threads=1, simple_marker_names) {
 	if (is.vector(file_info)) {
-		return(read_file(x))
+		return(read_file(x, simple_marker_names))
 	}
 	if (threads > 1) {
 		apply_fun = function(x, y) {
@@ -107,14 +110,14 @@ remove_small_cohorts <- function (fcs_info, minsize) {
 #' @examples
 #' fcs_data = load_fcs(file_info, threads=8)
 #' majority_markers(fcs_data, threshold=0.8)
-majority_markers <- function(fcs_info, threshold=0.95) {
+majority_markers <- function(fcs_info, threshold) {
 	selected = marker_occurrences(fcs_info) / nrow(fcs_info)
 	return(names(selected)[selected > threshold])
 }
 
 modify_selection_row <- function(fcs_row, selection) {
 	ff = fcs_row['fcs'][[1]]
-	ffn = colnames(ff)
+	ffn = flowCore::colnames(ff)
 	if (!any(is.na(match(selection, ffn)))) {
 	 	fcs_row['fcs'] = list(ff[,selection])
 	} else {
@@ -158,7 +161,7 @@ filter_flowFrame_majority <- function(fcs_info, threshold) {
 	occur_hist = occur_hist / nrow(fcs_info)
 	print("Marker occurrences:\n")
 	print(occur_hist)
-	return(list(fcs_info=filter_flowFrame_markers(fcs_info, selection), selection=selection))
+	return(list(file_info=filter_flowFrame_markers(fcs_info, selection), selection=selection))
 }
 
 #' Get distribution of marker channels across whole dataset.
@@ -198,9 +201,9 @@ remove_duplicates <- function(file_info) {
 		duplicates = names(file_freq)
 		for (d in duplicates) {
 			print(sprintf("Removed duplicate %s", d))
-			g = grep(d, rownames(file_information))
-			file_information[g[1], 'filepath'] = NA
-			file_information[g[2], 'filepath'] = NA
+			g = grep(d, rownames(file_info))
+			file_info[g[1], 'filepath'] = NA
+			file_info[g[2], 'filepath'] = NA
 		}
 		file_info = file_info[!is.na(file_info[,'filepath']),]
 	}
@@ -211,8 +214,9 @@ limit_size <- function(file_info, group_size) {
 	if (is.na(group_size)) {
 		return(file_info)
 	}
+	print(ncol(file_info))
 	tf_subset = matrix(ncol=ncol(file_info), nrow=0)
-	for (g in unique(tf1[,'group'])) {
+	for (g in unique(file_info[,'group'])) {
 		tf_subset = rbind(tf_subset, head(file_info[file_info[,'group'] == g,], n=group_size))
 	}
 	return(tf_subset)
@@ -243,11 +247,11 @@ create_file_info <- function(path, ext, set) {
 #' @param selection Marker names selected from flowframe.
 #' @return File row or NULL if marker name not in flowframe.
 #' @export
-process_single <- function(file_row, selection) {
-	file_row = read_file(file_row)
+process_single <- function(file_row, selection, simple_marker_names=FALSE) {
+	file_row = read_file(file_row, simple_marker_names)
 	file_row = modify_selection_row(file_row, selection)
 	if (any(is.na(file_row))) {
-		cat(paste("Skipping", file_row['filepath'], "because NA encountered."))
+		cat(paste("Skipping", file_row['filepath'], "because NA encountered.\n"))
 		return(NULL)
 	}
 	return(file_row)
