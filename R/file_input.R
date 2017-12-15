@@ -256,7 +256,7 @@ process_single <- function(file_row, selection, simple_marker_names=FALSE) {
 	}
 	sel_fun = function(x) { !grepl("LIN", x) }
 	trans_fun = flowCore::logTransform(transformationId="log10-transformation", logbase=10, r=1, d=1)
-	file_row['fcs'] = list(transform_ff(file_row[['fcs']]))
+	file_row['fcs'] = list(transform_ff(file_row[['fcs']], sel_fun, trans_fun))
 	return(file_row)
 }
 
