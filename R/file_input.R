@@ -11,15 +11,15 @@ get_dir <- function(path, ext) {
 	l = lapply(list.dirs(path, full.names=FALSE, recursive=FALSE), function(i) {
 		filelist = list.files(file.path(path, i), pattern=ext, full.names=FALSE)
 		f = sapply(filelist, function(x) {
-				   r = regexec('^([KMPB\\d-]+) CLL 9F (\\d+).*.LMD$', x, perl=TRUE)
+				   r = regexec('^(\\d+-\\d+)-(\\w+) CLL 9F (\\d+).*.LMD$', x, perl=TRUE)
 				   if ('-1' %in% r)
-				   	   return(c(NA, NA, NA, NA))
+				   	   return(c(NA, NA, NA, NA, NA))
 				   m = regmatches(x, r)
-				   return(c(file.path(path, i, x), i, m[[1]][[2]], strtoi(m[[1]][[3]])))
+				   return(c(file.path(path, i, x), i, m[[1]][[2]], m[[1]][[3]], strtoi(m[[1]][[4]])))
   		})
   		f = t(f)
   		f = f[!is.na(f[,1]),]
-  		flowCore::colnames(f) = c('filepath', 'group', 'label', 'set')
+  		colnames(f) = c('filepath', 'group', 'label', 'material', 'set')
   		return(f)
   		})
   	files = do.call(rbind, l)
@@ -179,14 +179,31 @@ marker_occurrences <- function(fcs_info) {
 
 #' Select one set in file matrix
 #'
-#' @param file_info File Matrix as loaded by get_dir.
+#' @inheritParams filter_file_info
 #' @param set Specifies set which will be returned.
 #' @return File matrix containing specified set.
 select_set <- function(file_info, set) {
-	if (is.vector(set) | is.list(set)) {
-		return(file_info[file_info[,'set'] %in% set,])
+	return(filter_file_info(file_info, set=set))
+}
+
+#' Filter file matrix according to parameters
+#'
+#' @param file_info File Matrix as loaded by get_dir
+#' @param ... named parameters matching names in the file matrix.
+#' @return Filtered file matrix.
+filter_file_info <- function(file_info, ...) {
+	kwargs = list(...)
+	n = colnames(file_info)
+	avail = kwargs[names(kwargs) %in% n]
+	for (nfilter in names(avail)) {
+		f = avail[[nfilter]]
+		if (length(f) == 1){
+			file_info = file_info[file_info[,nfilter] == f,]
+		} else {
+			file_info = file_info[file_info[,nfilter] %in% f,]
+		}
 	}
-	return(file_info[file_info[,'set'] == set,])
+	return(file_info)
 }
 
 #' Remove duplicates from file matrix.
@@ -281,10 +298,13 @@ process_single <- function(file_row, selection, simple_marker_names=FALSE) {
 #' @param group_size Size of returned groups, if defined, each cohort will have this size. Smaller cohorts will be discarded.
 #' @return File matrix with loaded and filtered datasets.
 #' @export
-process_dir <- function(path, ext='LMD', set=1, threshold=0.90, group_size=NA, threads=1, simple_marker_names=FALSE) {
+process_dir <- function(path, ext='LMD', set=1, material=NA, threshold=0.90, group_size=NA, threads=1, simple_marker_names=FALSE) {
 	file_info = create_file_info(path, ext, set)
 	if (is.null(file_info)) {
 		return(file_info)
+	}
+	if (!is.na(material)) {
+		file_info = filter_file_info(file_info, material=material)
 	}
 	file_info = read_files(file_info, threads=threads, simple_marker_names=simple_marker_names)
 	ret = filter_flowFrame_majority(file_info, threshold)
