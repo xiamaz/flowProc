@@ -298,12 +298,12 @@ process_single <- function(file_row, selection, simple_marker_names=FALSE) {
 #' @param group_size Size of returned groups, if defined, each cohort will have this size. Smaller cohorts will be discarded.
 #' @return File matrix with loaded and filtered datasets.
 #' @export
-process_dir <- function(path, ext='LMD', set=1, material=NA, threshold=0.90, group_size=NA, threads=1, simple_marker_names=FALSE) {
+process_dir <- function(path, ext='LMD', set=1, material=NULL, threshold=0.90, group_size=NA, threads=1, simple_marker_names=FALSE) {
 	file_info = create_file_info(path, ext, set)
 	if (is.null(file_info)) {
 		return(file_info)
 	}
-	if (!is.na(material)) {
+	if (!is.null(material)) {
 		file_info = filter_file_info(file_info, material=material)
 	}
 	file_info = read_files(file_info, threads=threads, simple_marker_names=simple_marker_names)
