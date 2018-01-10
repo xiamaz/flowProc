@@ -191,6 +191,7 @@ select_set <- function(file_info, set) {
 #' @param file_info File Matrix as loaded by get_dir
 #' @param ... named parameters matching names in the file matrix.
 #' @return Filtered file matrix.
+#' @export
 filter_file_info <- function(file_info, ...) {
 	kwargs = list(...)
 	n = colnames(file_info)
