@@ -7,7 +7,7 @@
 select_set(file_info, set)
 }
 \arguments{
-\item{file_info}{File Matrix as loaded by get_dir.}
+\item{file_info}{File Matrix as loaded by get_dir}
 
 \item{set}{Specifies set which will be returned.}
 }

@@ -4,7 +4,7 @@
 \alias{process_single}
 \title{Load and filter single file info entry}
 \usage{
-process_single(file_row, selection)
+process_single(file_row, selection, simple_marker_names = FALSE)
 }
 \arguments{
 \item{file_row}{File info row from a file matrix.}

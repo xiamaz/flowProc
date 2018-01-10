@@ -4,8 +4,9 @@
 \alias{process_dir}
 \title{Generate file matrix from directory}
 \usage{
-process_dir(path, ext = "LMD", set = 1, threshold = 0.9,
-  group_size = NA, threads = 1, simple_marker_names = FALSE)
+process_dir(path, ext = "LMD", set = 1, material = NULL,
+  threshold = 0.9, group_size = NA, threads = 1,
+  simple_marker_names = FALSE)
 }
 \arguments{
 \item{path}{Top directory which contains the lower directories serving as different groups.}

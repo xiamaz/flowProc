@@ -4,7 +4,7 @@
 \alias{majority_markers}
 \title{Determine marker names available in all flow data.}
 \usage{
-majority_markers(fcs_info, threshold = 0.95)
+majority_markers(fcs_info, threshold)
 }
 \arguments{
 \item{fcs_info}{File matrix with loaded flowFrames.}
