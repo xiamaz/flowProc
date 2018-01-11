@@ -30,11 +30,19 @@ read_file <- function(file_row, simple_marker_names) {
 	f = flowCore::read.FCS(as.character(file_row[['filepath']]), dataset=1)
 	# use simplified markernames, this might be an inappropriate simplification
 	m = flowCore::markernames(f)
+	curnames = flowCore::colnames(f)
+	if (length(m) > length(curnames)) {
+		stop(sprintf("Length of %d markernames does not match length %d of current names", curnames, m))
+	}
+	for (s in 1:length(m)) {
+		curnames[s] = m[[s]]
+	}
+
 	if (simple_marker_names) {
 		m = strsplit(m, '-')
 		m = sapply(m, function(x) { x[[1]] } )
 	}
-	flowCore::colnames(f) = m
+	flowCore::colnames(f) = curnames
 
 	return (c(file_row, fcs=f))
 }
@@ -267,6 +275,10 @@ create_file_info <- function(path, ext, set) {
 #' @export
 process_single <- function(file_row, selection, simple_marker_names=FALSE) {
 	file_row = read_file(file_row, simple_marker_names)
+
+	if (any(is.na(file_row))) {
+		return (NULL)
+	}
 	file_row = modify_selection_row(file_row, selection)
 	if (any(is.na(file_row))) {
 		cat(paste("Skipping", file_row['filepath'], "because NA encountered.\n"))
