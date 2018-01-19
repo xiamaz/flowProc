@@ -2,18 +2,22 @@
 % Please edit documentation in R/file_input.R
 \name{filter_flowFrame_majority}
 \alias{filter_flowFrame_majority}
-\title{Remove rare flowframe channels and exclude flowframes without common channels.}
+\title{Exclude flowframes without common channels.}
 \usage{
-filter_flowFrame_majority(fcs_info, threshold)
+filter_flowFrame_majority(flow_entries, threshold, cluster)
 }
 \arguments{
-\item{fcs_info}{File matrix with loaded flowframes.}
-
 \item{threshold}{Minimum ratio for marker to be common.}
+
+\item{fcs_info}{File matrix with loaded flowframes.}
 }
 \value{
 File matrix with removed channels.
 }
 \description{
-Remove rare flowframe channels and exclude flowframes without common channels.
+Exclude flowframes without common channels.
+}
+\examples{
+t = filter_flowFrame_majority(files[1:10], 0.8)
+t = filter_flowFrame_majority(files, 0.8, cluster)
 }

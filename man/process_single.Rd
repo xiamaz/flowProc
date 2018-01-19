@@ -2,18 +2,26 @@
 % Please edit documentation in R/file_input.R
 \name{process_single}
 \alias{process_single}
-\title{Load and filter single file info entry}
+\title{Remove debris
+Load and filter single file info entry}
 \usage{
-process_single(file_row, selection, simple_marker_names = FALSE)
+process_single(file_entry, selection, simple_marker_names = FALSE,
+  trans = "logicle")
 }
 \arguments{
-\item{file_row}{File info row from a file matrix.}
-
 \item{selection}{Marker names selected from flowframe.}
+
+\item{trans}{String name for transformation function.}
+
+\item{file_row}{File info row from a file matrix.}
 }
 \value{
 File row or NULL if marker name not in flowframe.
 }
 \description{
+Remove debris
 Load and filter single file info entry
+}
+\examples{
+t = process_single(files[[1]],selection)
 }

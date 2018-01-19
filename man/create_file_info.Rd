@@ -11,11 +11,11 @@ create_file_info(path, ext, set)
 
 \item{ext}{File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)}
 
-\item{set}{Specifies set which will be returned.}
+\item{set}{Chosen tube set for the files.}
 }
 \value{
 File matrix with specified set and no duplicates.
 }
 \description{
-Convinient wapper to extract a single set without duplicates from directory file structure.
+Convenient wapper to extract a single set without duplicates from directory file structure.
 }

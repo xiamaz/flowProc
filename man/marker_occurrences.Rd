@@ -4,14 +4,18 @@
 \alias{marker_occurrences}
 \title{Get distribution of marker channels across whole dataset.}
 \usage{
-marker_occurrences(fcs_info)
+marker_occurrences(flow_entries, cluster)
 }
 \arguments{
-\item{fcs_info}{File matrix as loaded by get_dir().}
+\item{flow_entries}{Flow entry list, FCS do not have to be loaded}
 }
 \value{
-Table with occurrences of marker channels in histogram data.
+Table with occurrences of marker channels as 1/0 matrix.
 }
 \description{
 Get distribution of marker channels across whole dataset.
+}
+\examples{
+t = marker_occurrences(files, cluster)
+t = marker_occurrences(files[1:10])
 }

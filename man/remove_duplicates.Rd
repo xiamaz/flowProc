@@ -2,9 +2,9 @@
 % Please edit documentation in R/file_input.R
 \name{remove_duplicates}
 \alias{remove_duplicates}
-\title{Remove duplicates from file matrix.}
+\title{Remove duplicates with same filename from file matrix.}
 \usage{
-remove_duplicates(file_info)
+remove_duplicates(fcs_entries)
 }
 \arguments{
 \item{File}{matrix as output by get_dir()}
@@ -13,5 +13,8 @@ remove_duplicates(file_info)
 File matrix with duplicates removed. All occurrences are removed.
 }
 \description{
-Remove duplicates from file matrix.
+Remove duplicates with same filename from file matrix.
+}
+\examples{
+t = remove_duplicates(files)
 }

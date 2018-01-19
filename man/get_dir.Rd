@@ -4,12 +4,14 @@
 \alias{get_dir}
 \title{Get file structure information from a given directory, using the lower directories as groupings.}
 \usage{
-get_dir(path, ext)
+get_dir(path, ext, cluster)
 }
 \arguments{
 \item{path}{Top directory which contains the lower directories serving as different groups.}
 
 \item{ext}{File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)}
+
+\item{cluster}{Optional cluster for parallel processing.}
 }
 \value{
 Matrix containing filepath, group, label (regex currently hardcoded for specific naming schemata)
@@ -20,4 +22,6 @@ Get file structure information from a given directory, using the lower directori
 \examples{
 get_dir('/data/flowData', 'FCS')
 get_dir('../data/fcs', 'lmd')
+files = get_dir(testdir, 'LMD', cluster)
+files = get_dir(testdir, 'LMD')
 }

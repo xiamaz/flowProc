@@ -1,6 +1,6 @@
 Package: flowProc
 Title: Flowcytometry data preprocessing tools
-Version: 0.0.0.9000
+Version: 0.0.1.0000
 Authors@R: person("Max", "Zhao", email = "alcasa.mz@gmail.com", role = c("aut", "cre"))
 Description: Preprocessing of structured flow cytometry data for classification tasks.
 Depends: R (>= 3.3.0)
@@ -10,4 +10,5 @@ LazyData: true
 Imports:
 	parallel,
 	flowCore,
+	plyr
 RoxygenNote: 6.0.1
