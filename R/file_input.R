@@ -28,7 +28,7 @@ get_dir <- function(path, ext, cluster) {
 			   label = m[[1]][[3]]
 			   material = m[[1]][[4]]
 			   tube_set = as.numeric(m[[1]][[5]])
-			   fe = new('flowEntry',
+			   fe = new('FlowEntry',
 			   			filepath=filepath,group=group,label=label,material=material,tube_set=tube_set)
 			   return(fe)
 	})
@@ -36,6 +36,9 @@ get_dir <- function(path, ext, cluster) {
 	return(f)
 }
 
+#' Load single fcs file into a file matrix
+#'
+#' @export
 read_file <- function(flow_entry, simple_marker_names=FALSE,dataset=1) {
 	flow_entry@fcs = flowCore::read.FCS(flow_entry@filepath, dataset=dataset)
 	# use simplified markernames, this might be an inappropriate simplification
@@ -67,6 +70,7 @@ read_file <- function(flow_entry, simple_marker_names=FALSE,dataset=1) {
 #' @examples
 #' file_entries = get_dir('/data', 'fcs')
 #' read_files(file_matrix)
+#' @export
 read_files <- function(file_entries, cluster, simple_marker_names=FALSE, dataset=1) {
 	if (missing(cluster)) {
 		apply_fun = function(x, y) {
@@ -119,7 +123,7 @@ remove_small_cohorts <- function (file_entries, minsize) {
 #' @export
 filter_list <- function(file_entries, ...) {
 	params = list(...)
-	filter_params = params[names(params) %in% names(getSlots('flowEntry'))]
+	filter_params = params[names(params) %in% names(getSlots('FlowEntry'))]
 	for (filter_slot in names(filter_params)) {
 		filter_val = filter_params[[filter_slot]]
 		file_entries = lapply(file_entries, function(entry) {
@@ -197,6 +201,7 @@ marker_occurrences <- function(flow_entries, cluster) {
 #' @return File matrix with duplicates removed. All occurrences are removed.
 #' @examples
 #' t = remove_duplicates(files)
+#' @export
 remove_duplicates <- function(fcs_entries) {
 	# remove duplicates until we have a better idea
 	filenames = sapply(fcs_entries, function(entry) {
@@ -244,14 +249,19 @@ remove_marginal <- function(flow_entry) {
 		ex[,i] > max(cols[1,i],min(ex[,i])) &
 			ex[,i] < min(cols[2,i],max(ex[,i]))
 	})
-	ex = ex[rowSums(sel) == ncol(sel),]
-	flowCore::exprs(flow_entry@fcs) = ex
+	if (nrow(ex) <= 1) {
+		print(ex)
+		flow_entry = NA
+	} else {
+		ex = ex[rowSums(sel) == ncol(sel),]
+		flowCore::exprs(flow_entry@fcs) = ex
+	}
 	return(flow_entry)
 }
 
 # not implemented because it requires forward scatter area and height
 # remove_doublets <- function(flow_entry) {
-# 
+#
 # }
 
 #' Remove debris
@@ -269,14 +279,16 @@ process_single <- function(file_entry, selection, simple_marker_names=FALSE, tra
 	file_entry = read_file(file_entry, simple_marker_names)
 
 	if (!isS4(file_entry)) {
-		return (NULL)
+		return (NA)
 	}
 	file_entry = fcs_select_markers(file_entry, selection)
 	if (!isS4(file_entry)) {
-		cat(paste("Skipping", file_entry@filepath, "because NA encountered.\n"))
-		return(NULL)
+		return(NA)
 	}
 	file_entry = remove_marginal(file_entry)
+	if (!isS4(file_entry)) {
+		return(NA)
+	}
 	sel_fun = function(x) { !grepl("LIN", x) }
 	if (trans == 'logicle') {
 		trans_fun = flowCore::logicleTransform()
