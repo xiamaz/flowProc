@@ -4,7 +4,7 @@
 \alias{create_file_info}
 \title{Read and preprocess file structure}
 \usage{
-create_file_info(path, ext, set)
+create_file_info(path, ext, set, cluster)
 }
 \arguments{
 \item{path}{Top directory which contains the lower directories serving as different groups.}
@@ -12,6 +12,8 @@ create_file_info(path, ext, set)
 \item{ext}{File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)}
 
 \item{set}{Chosen tube set for the files.}
+
+\item{cluster}{Optional cluster for parallel processing.}
 }
 \value{
 File matrix with specified set and no duplicates.

@@ -4,10 +4,14 @@
 \alias{remove_marginal}
 \title{Remove marginal cells}
 \usage{
-remove_marginal(flow_entry)
+remove_marginal(flow_entry, lower = TRUE, upper = TRUE)
 }
 \arguments{
 \item{flow_entry}{Flow data with loaded fcs slot.}
+
+\item{lower}{Boolean to enable lower boundary filtering.}
+
+\item{upper}{Boolean to enable upper boundary filtering.}
 }
 \value{
 Flow entry with marginal events removed.

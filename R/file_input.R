@@ -127,15 +127,22 @@ filter_list <- function(file_entries, ...) {
 	for (filter_slot in names(filter_params)) {
 		filter_val = filter_params[[filter_slot]]
 		file_entries = lapply(file_entries, function(entry) {
-		  if (as.character(slot(entry,filter_slot)) == as.character(filter_val))
+		  if (is.vector(filter_val)) {
+			if (as.character(slot(entry,filter_slot)) %in% filter_val) {
+				return(entry)
+			}else{
+				return(NA)}
+		  }else{
+		    if (as.character(slot(entry,filter_slot)) == as.character(filter_val)){
 		  	  return(entry)
-		  else
-		  	  return(NA)
-		})
+		    }else{
+		  	  return(NA)}
+		  } })
 		file_entries = file_entries[!is.na(file_entries)]
 	}
 	return(file_entries)
 }
+
 
 #' Reduce flowframe to specified set of marker channels.
 #'
@@ -222,8 +229,8 @@ remove_duplicates <- function(fcs_entries) {
 #' @param set Chosen tube set for the files.
 #' @return File matrix with specified set and no duplicates.
 #' @export
-create_file_info <- function(path, ext, set) {
-	file_info = get_dir(path, ext)
+create_file_info <- function(path, ext, set, cluster) {
+	file_info = get_dir(path, ext, cluster=cluster)
 	if (is.null(file_info)) {
 		print(sprintf("No files found in given directory %s", getwd()))
 		return(file_info)
@@ -239,21 +246,35 @@ create_file_info <- function(path, ext, set) {
 #' The border is defined via the parameter range or as the min/max of the dataset.
 #'
 #' @param flow_entry Flow data with loaded fcs slot.
+#' @param lower Boolean to enable lower boundary filtering.
+#' @param upper Boolean to enable upper boundary filtering.
 #' @return Flow entry with marginal events removed.
 #' @examples
 #' remove_marginal(testflow)
-remove_marginal <- function(flow_entry) {
+#' @export
+remove_marginal <- function(flow_entry,lower=TRUE,upper=TRUE) {
 	cols = range(flow_entry@fcs)
 	ex = flowCore::exprs(flow_entry@fcs)
 	sel = sapply(1:ncol(cols), function(i) {
-		ex[,i] > max(cols[1,i],min(ex[,i])) &
+		if(lower & upper) {
+			ex[,i] > max(cols[1,i],min(ex[,i])) &
 			ex[,i] < min(cols[2,i],max(ex[,i]))
+		} else if (lower) {
+			ex[,i] > max(cols[1,i],min(ex[,i]))
+		} else if (upper) {
+			ex[,i] < min(cols[2,i],max(ex[,i]))
+		} else {
+			ex[,i] & TRUE
+		}
 	})
 	if (nrow(ex) <= 1) {
 		print(ex)
 		flow_entry = NA
 	} else {
 		ex = ex[rowSums(sel) == ncol(sel),]
+		if (!is.matrix(ex))  {
+			return(NA)
+		}
 		flowCore::exprs(flow_entry@fcs) = ex
 	}
 	return(flow_entry)
@@ -271,23 +292,28 @@ remove_marginal <- function(flow_entry) {
 #' @param file_row File info row from a file matrix.
 #' @param selection Marker names selected from flowframe.
 #' @param trans String name for transformation function.
+#' @param remove_margins Boolean for removal of events with 0 or maximum values.
 #' @return File row or NULL if marker name not in flowframe.
 #' @export
 #' @examples
 #' t = process_single(files[[1]],selection)
-process_single <- function(file_entry, selection, simple_marker_names=FALSE, trans='logicle') {
+process_single <- function(file_entry, selection, simple_marker_names=FALSE, trans='logicle',remove_margins=TRUE,upper=TRUE,lower=TRUE) {
 	file_entry = read_file(file_entry, simple_marker_names)
 
 	if (!isS4(file_entry)) {
 		return (NA)
 	}
-	file_entry = fcs_select_markers(file_entry, selection)
-	if (!isS4(file_entry)) {
-		return(NA)
+	if (!missing(selection)) {
+		file_entry = fcs_select_markers(file_entry, selection)
+		if (!isS4(file_entry)) {
+			return(NA)
+		}
 	}
-	file_entry = remove_marginal(file_entry)
-	if (!isS4(file_entry)) {
-		return(NA)
+	if (remove_margins) {
+		file_entry = remove_marginal(file_entry,upper=upper,lower=lower)
+		if (!isS4(file_entry)) {
+			return(NA)
+		}
 	}
 	sel_fun = function(x) { !grepl("LIN", x) }
 	if (trans == 'logicle') {

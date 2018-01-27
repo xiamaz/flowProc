@@ -6,12 +6,14 @@
 Load and filter single file info entry}
 \usage{
 process_single(file_entry, selection, simple_marker_names = FALSE,
-  trans = "logicle")
+  trans = "logicle", remove_margins = TRUE, upper = TRUE, lower = TRUE)
 }
 \arguments{
 \item{selection}{Marker names selected from flowframe.}
 
 \item{trans}{String name for transformation function.}
+
+\item{remove_margins}{Boolean for removal of events with 0 or maximum values.}
 
 \item{file_row}{File info row from a file matrix.}
 }
