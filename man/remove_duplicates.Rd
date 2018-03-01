@@ -7,7 +7,7 @@
 remove_duplicates(fcs_entries)
 }
 \arguments{
-\item{File}{matrix as output by get_dir()}
+\item{File}{matrix as output by GetDir()}
 }
 \value{
 File matrix with duplicates removed. All occurrences are removed.
