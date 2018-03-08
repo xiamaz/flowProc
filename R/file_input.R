@@ -10,11 +10,15 @@
 #' files = GetDir(testdir, 'LMD', cluster)
 #' files = GetDir(testdir, 'LMD')
 #' @export
-GetDir <- function(path, ext, cluster) {
-  if (missing(cluster)) {
-    lfunc <- lapply
+GetDir <- function(path, ext, thread.number = 1) {
+  if (thread.number > 1) {
+    lfunc <- function(x, y) {
+      cluster <- parallel::makeCluster(thread.number, type = "FORK")
+      parallel::parLapply(cluster, x, y)
+      parallel::stopCluster(cluster)
+    }
   } else {
-    lfunc <- function(x, y) { parallel::parLapply(cluster, x, y) }
+    lfunc <- lapply
   }
   filelist <- list.files(path, pattern = ext, full.names = TRUE, recursive = TRUE)
   f <- lfunc(filelist, function(x) {

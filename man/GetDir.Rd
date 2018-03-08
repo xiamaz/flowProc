@@ -4,7 +4,7 @@
 \alias{GetDir}
 \title{Get file structure information from a given directory, using the lower directories as groupings.}
 \usage{
-GetDir(path, ext, cluster)
+GetDir(path, ext, thread.number = 1)
 }
 \arguments{
 \item{path}{Top directory which contains the lower directories serving as different groups.}
