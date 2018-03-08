@@ -11,7 +11,7 @@ GetDir(path, ext, thread.number = 1)
 
 \item{ext}{File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)}
 
-\item{cluster}{Optional cluster for parallel processing.}
+\item{thread.number}{Number of threads for cluster generation.}
 }
 \value{
 Matrix containing filepath, group, label (regex currently hardcoded for specific naming schemata)

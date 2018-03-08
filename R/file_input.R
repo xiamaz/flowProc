@@ -2,7 +2,7 @@
 #'
 #' @param path Top directory which contains the lower directories serving as different groups.
 #' @param ext File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)
-#' @param cluster Optional cluster for parallel processing.
+#' @param thread.number Number of threads for cluster generation.
 #' @return Matrix containing filepath, group, label (regex currently hardcoded for specific naming schemata)
 #' @examples
 #' GetDir('/data/flowData', 'FCS')
@@ -288,17 +288,17 @@ MarkerOccurences <- function(flow.entries) {
 #' @param File matrix as output by GetDir()
 #' @return File matrix with duplicates removed. All occurrences are removed.
 #' @examples
-#' t = remove_duplicates(files)
+#' t = RemoveDuplicates(files)
 #' @export
-remove_duplicates <- function(fcs_entries) {
+RemoveDuplicates <- function(fcs_entries) {
   # remove duplicates until we have a better idea
-  filenames = sapply(fcs_entries, function(entry) {
+  filenames <- sapply(fcs_entries, function(entry) {
               basename(entry@filepath)
   })
-  file_freq = table(filenames)
-  file_freq = file_freq[file_freq > 1 ]
+  file_freq <- table(filenames)
+  file_freq <- file_freq[file_freq > 1]
   print(paste("Removed duplicates", names(file_freq)))
-  duplicate = filenames %in% names(file_freq)
+  duplicate <- filenames %in% names(file_freq)
   return(fcs_entries[!duplicate])
 }
 
@@ -307,17 +307,23 @@ remove_duplicates <- function(fcs_entries) {
 #' Convenient wapper to extract a single set without duplicates from directory file structure.
 #'
 #' @inheritParams GetDir
-#' @param set Chosen tube set for the files.
+#' @param remove.duplicates Remove duplicate file entries.
+#' @param material Optional filter on used material of files.
 #' @return File matrix with specified set and no duplicates.
 #' @export
-create_file_info <- function(path, ext, set, cluster) {
-  file_info <- GetDir(path, ext, cluster=cluster)
+CreateFileInfo <- function(path, thread.num, ext="LMD", remove.duplicates = T, material = NULL) {
+  file_info <- GetDir(path, ext, thread.num)
   if (is.null(file_info)) {
     print(sprintf("No files found in given directory %s", getwd()))
     return(file_info)
   }
-  file_info <- FilterList(file_info, tube_set=set)
-  file_info <- remove_duplicates(file_info)
+  if (remove.duplicates) {
+    file_info <- RemoveDuplicates(file_info)
+  }
+
+  if (is.vector(material)) {
+    file_info <- FilterList(file_info, material = material)
+  }
   return(file_info)
 }
 
