@@ -14,8 +14,9 @@ GetDir <- function(path, ext, thread.number = 1) {
   if (thread.number > 1) {
     lfunc <- function(x, y) {
       cluster <- parallel::makeCluster(thread.number, type = "FORK")
-      parallel::parLapply(cluster, x, y)
+      result <- parallel::parLapply(cluster, x, y)
       parallel::stopCluster(cluster)
+      return(result)
     }
   } else {
     lfunc <- lapply
@@ -44,7 +45,7 @@ GetDir <- function(path, ext, thread.number = 1) {
 #'
 #' @export
 read_file <- function(flow_entry, simple_marker_names=FALSE,dataset=1) {
-  flow_entry@fcs = flowCore::read.FCS(flow_entry@filepath, dataset=dataset)
+  flow_entry@fcs <- flowCore::read.FCS(flow_entry@filepath, dataset=dataset)
   # use simplified markernames, this might be an inappropriate simplification
   m = flowCore::markernames(flow_entry@fcs)
   curnames = flowCore::colnames(flow_entry@fcs)
@@ -255,10 +256,10 @@ FilterChannelMajority <- function(flow.entries, threshold = 0.9) {
   # select entries with all markers present
   selected.matrix <- marker.matrix[, selected.markers]
   selected.files <- flow.entries[rowSums(selected.matrix) == length(selected.markers)]
-  selected.files <- lapply(selected.files, function(entry) {
-                             entry@fcs <- entry@fcs[, selected.markers]
-                             return(entry)
-                             })
+  # selected.files <- lapply(selected.files, function(entry) {
+  #                            entry@fcs <- entry@fcs[, selected.markers]
+  #                            return(entry)
+  #                            })
   return(list(entries = selected.files, markers = selected.markers))
 }
 
@@ -273,7 +274,11 @@ FilterChannelMajority <- function(flow.entries, threshold = 0.9) {
 MarkerOccurences <- function(flow.entries) {
   # save colnames as vector of ones
   colmatrix <- lapply(flow.entries, function(x) {
-               fnames <- flowCore::colnames(x@fcs)
+               # fnames <- flowCore::colnames(x@fcs)
+               # alternative name getting
+               fnames <- flowCore::read.FCSheader(x@filepath)[[1]]
+               par.names <- names(fnames)
+               fnames <- fnames[par.names[grepl("\\$P\\d+S", par.names, perl = T)]]
                fnamevec <- rep(1, length(fnames))
                names(fnamevec) <- fnames
                return(t(fnamevec))
@@ -311,10 +316,10 @@ RemoveDuplicates <- function(fcs_entries) {
 #' @param material Optional filter on used material of files.
 #' @return File matrix with specified set and no duplicates.
 #' @export
-CreateFileInfo <- function(path, thread.num, ext="LMD", remove.duplicates = T, material = NULL) {
+CreateFileInfo <- function(path, thread.num, ext = "LMD", remove.duplicates = T, material = NULL) {
   file_info <- GetDir(path, ext, thread.num)
   if (is.null(file_info)) {
-    print(sprintf("No files found in given directory %s", getwd()))
+    print(sprintf("No files found in given directory %s", path))
     return(file_info)
   }
   if (remove.duplicates) {
@@ -383,32 +388,33 @@ remove_marginal <- function(flow_entry, lower = TRUE, upper = TRUE) {
 #' @return File row or NULL if marker name not in flowframe.
 #' @export
 #' @examples
-#' t = process_single(files[[1]],selection)
-process_single <- function(file_entry, selection, simple_marker_names=FALSE, trans='logicle',remove_margins=TRUE,upper=TRUE,lower=TRUE) {
-  file_entry = read_file(file_entry, simple_marker_names)
+#' t = ProcessSingle(files[[1]],selection)
+ProcessSingle <- function(file_entry, selection, simple_marker_names = FALSE, trans = 'logicle',
+                          remove_margins = TRUE, upper = TRUE, lower = TRUE) {
+  file_entry <- read_file(file_entry, simple_marker_names)
 
   if (!isS4(file_entry)) {
-    return (NA)
+    return(NA)
   }
   if (!missing(selection)) {
-    file_entry = fcs_select_markers(file_entry, selection)
+    file_entry <- fcs_select_markers(file_entry, selection)
     if (!isS4(file_entry)) {
       return(NA)
     }
   }
   if (remove_margins) {
-    file_entry = remove_marginal(file_entry,upper=upper,lower=lower)
+    file_entry <- remove_marginal(file_entry,upper=upper,lower=lower)
     if (!isS4(file_entry)) {
       return(NA)
     }
   }
   sel_fun = function(x) { !grepl("LIN", x) }
   if (trans == 'logicle') {
-    trans_fun = flowCore::logicleTransform()
+    trans_fun <- flowCore::logicleTransform()
   } else {
-    trans_fun = flowCore::logTransform(transformationId="log10-transformation", logbase=10, r=1, d=1)
+    trans_fun <- flowCore::logTransform(transformationId="log10-transformation", logbase=10, r=1, d=1)
   }
-  file_entry@fcs = transform_ff(file_entry@fcs, sel_fun, trans_fun)
+  file_entry@fcs <- transform_ff(file_entry@fcs, sel_fun, trans_fun)
   return(file_entry)
 }
 
