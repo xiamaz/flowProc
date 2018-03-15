@@ -4,13 +4,10 @@
 \alias{CreateFileInfo}
 \title{Read and preprocess file structure}
 \usage{
-CreateFileInfo(path, thread.num, ext = "LMD", remove.duplicates = T,
-  material = NULL)
+CreateFileInfo(path, remove.duplicates = T, material = NULL, ...)
 }
 \arguments{
 \item{path}{Top directory which contains the lower directories serving as different groups.}
-
-\item{ext}{File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)}
 
 \item{remove.duplicates}{Remove duplicate file entries.}
 

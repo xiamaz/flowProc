@@ -2,9 +2,9 @@
 % Please edit documentation in R/file_input.R
 \name{GroupBy}
 \alias{GroupBy}
-\title{Group list by slow value}
+\title{Group list by specific field}
 \usage{
-GroupBy(upsampled.list, group.on, acc, num.threads = 1)
+GroupBy(upsampled.list, group.on, acc = slot, ...)
 }
 \arguments{
 \item{upsampled.list}{List of entries.}
@@ -15,9 +15,9 @@ comparator.}
 \item{acc}{Alternative function to access the information for grouping.}
 }
 \description{
-Group list by slow value
+Group list by specific field
 }
 \examples{
 GroupBy(all.files, 'label')
-GroupBy(all.files, 'label', num.threads=12)
+GroupBy(all.files, 'label', thread.num=12)
 }

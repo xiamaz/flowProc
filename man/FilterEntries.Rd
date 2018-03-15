@@ -4,15 +4,15 @@
 \alias{FilterEntries}
 \title{Return boolean vector for a list based on filter}
 \usage{
-FilterEntries(entry.list, filters, acc)
+FilterEntries(entry.list, ...)
 }
 \arguments{
+\item{file.list}{List of S4 objects implementing the names in the filter.}
+
 \item{filters}{List of named vectors.}
 
 \item{acc}{Optional parameter to override the function used to access the
 compared value.}
-
-\item{file.list}{List of S4 objects implementing the names in the filter.}
 }
 \value{
 boolean vector used for subsetting the list.

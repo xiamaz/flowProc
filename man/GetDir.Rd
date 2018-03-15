@@ -4,14 +4,12 @@
 \alias{GetDir}
 \title{Get file structure information from a given directory, using the lower directories as groupings.}
 \usage{
-GetDir(path, ext, thread.number = 1)
+GetDir(path, ext = "LMD", ...)
 }
 \arguments{
 \item{path}{Top directory which contains the lower directories serving as different groups.}
 
 \item{ext}{File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)}
-
-\item{thread.number}{Number of threads for cluster generation.}
 }
 \value{
 Matrix containing filepath, group, label (regex currently hardcoded for specific naming schemata)

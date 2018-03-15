@@ -4,7 +4,7 @@
 \alias{FilterEntry}
 \title{Return bool for entry depending on whether it matches filter}
 \usage{
-FilterEntry(entry, filters, acc)
+FilterEntry(entry, filters, acc, ...)
 }
 \arguments{
 \item{entry}{Entry type S4 class.}
