@@ -31,6 +31,7 @@ CreateLapply <- function(thread.num = 1, ...) {
 #' @slot material Sample material used in analysis.
 #' @slot tube_set Multiple tubes can be used to capture a larger number of channels per sample.
 #' @slot fcs Slot to load fcs file.
+#' @slot dataset Original dataset of the file.
 #' @importClassesFrom flowCore flowFrame
 FlowEntry <- setClass("FlowEntry",
      representation(
@@ -39,6 +40,7 @@ FlowEntry <- setClass("FlowEntry",
       label = "character",
       material = "character",
       tube_set = "numeric",
-      fcs = "flowFrame"
+      fcs = "flowFrame",
+      dataset = "character"
       )
      )

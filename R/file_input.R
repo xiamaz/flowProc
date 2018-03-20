@@ -1,4 +1,25 @@
-#' Read and preprocess file structure
+#' Read all datasets
+#'
+#' Data used by flowProc has to be organized into a specific hierarchy.
+#'  BASE_DIR - Root directory of the data
+#'  DATASET - Set of data containing different cohorts
+#'  COHORTS - folder name is used to denote cohort affiliation
+#'  FILES - filename used to infer label and tube_set
+#'
+#' @param path Dataset root directory.
+#' @export
+ReadDatasets <- function(path, ...) {
+  datasets <- list.dirs(path, recursive = F, full.names = F)
+  datasets <- lapply(datasets, function(dset) {
+                       dpath <- file.path(path, dset)
+                       dset <- ReadDataset(dpath, dataset = dset, ...)
+  })
+  # flatten list, dataset can be retrieved from slot
+  return(do.call(c, datasets))
+}
+
+
+#' Read single dataset
 #'
 #' Convenient wapper to extract a single set without duplicates from directory file structure.
 #'
@@ -7,7 +28,7 @@
 #' @param material Optional filter on used material of files.
 #' @return File matrix with specified set and no duplicates.
 #' @export
-CreateFileInfo <- function(path, remove.duplicates = T, material = NULL, ...) {
+ReadDataset <- function(path, remove.duplicates = T, material = NULL, ...) {
   entry.list <- GetDir(path, ...)
   if (is.null(entry.list)) {
     print(sprintf("No files found in given directory %s", path))
@@ -28,14 +49,14 @@ CreateFileInfo <- function(path, remove.duplicates = T, material = NULL, ...) {
 #'
 #' @param path Top directory which contains the lower directories serving as different groups.
 #' @param ext File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)
+#' @param dataset Dataset name.
 #' @return Matrix containing filepath, group, label (regex currently hardcoded for specific naming schemata)
 #' @examples
 #' GetDir('/data/flowData', 'FCS')
 #' GetDir('../data/fcs', 'lmd')
 #' files = GetDir(testdir, 'LMD', cluster)
 #' files = GetDir(testdir, 'LMD')
-#' @export
-GetDir <- function(path, ext = "LMD", ...) {
+GetDir <- function(path, ext = "LMD", dataset = "", ...) {
   lfunc <- CreateLapply(...)
   filelist <- list.files(path, pattern = ext, full.names = TRUE, recursive = TRUE)
   f <- lfunc(filelist, function(x) {
@@ -50,7 +71,8 @@ GetDir <- function(path, ext = "LMD", ...) {
          material <- m[[1]][[4]]
          tube_set <- as.numeric(m[[1]][[5]])
          fe <- new("FlowEntry",
-              filepath = filepath, group = group, label = label, material = material, tube_set = tube_set)
+              filepath = filepath, group = group, label = label, material = material, tube_set = tube_set,
+              dataset = dataset)
          return(fe)
   })
   f <- f[!is.na(f)]

@@ -4,12 +4,14 @@
 \alias{GetDir}
 \title{Get file structure information from a given directory, using the lower directories as groupings.}
 \usage{
-GetDir(path, ext = "LMD", ...)
+GetDir(path, ext = "LMD", dataset = "", ...)
 }
 \arguments{
 \item{path}{Top directory which contains the lower directories serving as different groups.}
 
 \item{ext}{File extension of files to be included. Generally this will be either lmd or fcs (case sensitive)}
+
+\item{dataset}{Dataset name.}
 }
 \value{
 Matrix containing filepath, group, label (regex currently hardcoded for specific naming schemata)

@@ -22,5 +22,7 @@ S4 class representing a flowframe with additional metadata
 \item{\code{tube_set}}{Multiple tubes can be used to capture a larger number of channels per sample.}
 
 \item{\code{fcs}}{Slot to load fcs file.}
+
+\item{\code{dataset}}{Original dataset of the file.}
 }}
 
