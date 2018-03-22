@@ -11,6 +11,7 @@
 ReadDatasets <- function(path, ...) {
   datasets <- list.dirs(path, recursive = F, full.names = F)
   datasets <- lapply(datasets, function(dset) {
+                       message("Reading data from dataset ", dset)
                        dpath <- file.path(path, dset)
                        dset <- ReadDataset(dpath, dataset = dset, ...)
   })
@@ -25,10 +26,10 @@ ReadDatasets <- function(path, ...) {
 #'
 #' @inheritParams GetDir
 #' @param remove.duplicates Remove duplicate file entries.
-#' @param material Optional filter on used material of files.
+#' @param filters Optional filters used on slot of files.
 #' @return File matrix with specified set and no duplicates.
 #' @export
-ReadDataset <- function(path, remove.duplicates = T, material = NULL, ...) {
+ReadDataset <- function(path, remove.duplicates = T, filters = list(), ...) {
   entry.list <- GetDir(path, ...)
   if (is.null(entry.list)) {
     print(sprintf("No files found in given directory %s", path))
@@ -38,8 +39,8 @@ ReadDataset <- function(path, remove.duplicates = T, material = NULL, ...) {
     entry.list <- RemoveDuplicates(entry.list)
   }
 
-  if (is.vector(material)) {
-    entry.list <- entry.list[FilterEntries(entry.list, list(material = material))]
+  if (length(filters) > 0) {
+    entry.list <- entry.list[FilterEntries(entry.list, filters)]
   }
   return(entry.list)
 }
@@ -157,7 +158,8 @@ RemoveDuplicates <- function(fcs_entries) {
   })
   file_freq <- table(filenames)
   file_freq <- file_freq[file_freq > 1]
-  print(paste("Removed duplicates", names(file_freq)))
+  message("Removed ", length(file_freq), " duplicates.")
+  # print(paste("Removed duplicates", names(file_freq)))
   duplicate <- filenames %in% names(file_freq)
   return(fcs_entries[!duplicate])
 }

@@ -4,14 +4,14 @@
 \alias{ReadDataset}
 \title{Read single dataset}
 \usage{
-ReadDataset(path, remove.duplicates = T, material = NULL, ...)
+ReadDataset(path, remove.duplicates = T, filters = list(), ...)
 }
 \arguments{
 \item{path}{Top directory which contains the lower directories serving as different groups.}
 
 \item{remove.duplicates}{Remove duplicate file entries.}
 
-\item{material}{Optional filter on used material of files.}
+\item{filters}{Optional filters used on slot of files.}
 }
 \value{
 File matrix with specified set and no duplicates.
