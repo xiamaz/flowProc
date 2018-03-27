@@ -133,7 +133,7 @@ FilterEntries <- function(entry.list, ...) {
 #' @return Boolean whether filter is fulfilled.
 FilterEntry <- function(entry, filters, acc, ...) {
   if (missing(acc)) {
-    acc <- slot
+    acc <- methods::slot
   }
   # check if all criteria in filters, a named list of values is fulfilled
   for (slot.name in names(filters)) {
