@@ -71,7 +71,7 @@ GetDir <- function(path, ext = "LMD", dataset = "", ...) {
          label <- m[[1]][[3]]
          material <- m[[1]][[4]]
          tube_set <- as.numeric(m[[1]][[5]])
-         fe <- new("FlowEntry",
+         fe <- methods::new("FlowEntry",
               filepath = filepath, group = group, label = label, material = material, tube_set = tube_set,
               dataset = dataset)
          return(fe)
