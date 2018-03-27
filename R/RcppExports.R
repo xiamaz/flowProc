@@ -13,3 +13,8 @@ cGroupBy <- function(input, group_on, tube_nums) {
     .Call('_flowProc_cGroupBy', PACKAGE = 'flowProc', input, group_on, tube_nums)
 }
 
+#' @export
+cGetDir <- function(dir_path, dataset) {
+    .Call('_flowProc_cGetDir', PACKAGE = 'flowProc', dir_path, dataset)
+}
+

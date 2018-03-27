@@ -1,9 +1,12 @@
 #include <algorithm>
+#include <regex>
+#include <sstream>
+#include <dirent.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
 
-// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::plugins("cpp14")]]
 
 //' Group list of S4 flow entries by slot and optionally limit to tube
 //'
@@ -56,4 +59,77 @@ List cGroupBy (List input, String group_on, IntegerVector tube_nums) {
 	}
 	output.attr("names") = names;
 	return output;
+}
+
+//' @export
+// [[Rcpp::export]]
+SEXP cGetDir (String dir_path, String dataset) {
+	struct dirent *files;
+	std::regex filename_regex("^(\\d+-\\d+)-(\\w+) CLL 9F (\\d+).*.LMD$");
+	std::smatch regex_match;
+	DIR *dir = opendir(dir_path.get_cstring());
+	if (dir == nullptr) {
+		Rprintf("Invalid directory %s\n", dir_path.get_cstring());
+		return List::create();
+	}
+	// std::vector<S4> file_objs;
+	std::vector<List> file_objs;
+	int i = 0;
+	// S4 test;
+	List test;
+	DIR *subdir;
+	std::stringstream ss;
+	while (bool(files = readdir(dir))) {
+		auto group = std::string(files->d_name);
+		if (group == "." || group == "..") {
+			continue;
+		}
+		// clear the stringstream
+		ss.str(std::string());
+		ss << std::string(dir_path) << "/" << group;
+		std::string subpath = ss.str();
+		subdir = opendir(subpath.c_str());
+		if (subdir == nullptr) {
+			continue;
+		}
+		// Rprintf("Listing %s\n", subpath.c_str());
+		struct dirent *fcs_file;
+		while (bool(fcs_file = readdir(subdir))) {
+			//Rprintf("%s\n", fcs_file->d_name);
+			std::string filename(fcs_file->d_name);
+			// match regular expressions to filename
+			if (std::regex_match(filename, regex_match, filename_regex)) {
+				if (regex_match.size() == 4) {
+					ss.str(std::string());
+					ss << subpath << "/" << filename;
+					std::string filepath = ss.str();
+
+					// test = S4("FlowEntry");
+					// test.slot("filepath") = filepath;
+					// test.slot("group") = group;
+					// test.slot("label") = regex_match[1].str();
+					// test.slot("material") = regex_match[2].str();
+					// test.slot("tube_set") = std::stoi(regex_match[3].str());
+					// test.slot("dataset") = dataset;
+					test = List::create(
+							Named("filepath") = filepath,
+							Named("group") = group,
+							Named("label") = regex_match[1].str(),
+							Named("material") = regex_match[2].str(),
+							Named("tube_set") = std::stoi(regex_match[3].str()),
+							Named("dataset") = dataset);
+					file_objs.push_back(test);
+				}
+			}
+		}
+		closedir(subdir);
+	}
+	closedir(dir);
+	// List output = List(file_objs.size());
+	// // Rprintf("End stuff\n");
+	// for (int i = 0; i < file_objs.size(); i++) {
+	// 	Rprintf("Sting %d of %d\n", i, file_objs.size());
+	// 	output[i] = file_objs[i];
+	// }
+	return wrap(file_objs);
 }
