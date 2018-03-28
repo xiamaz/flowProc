@@ -62,9 +62,9 @@ ReadDataset <- function(path, remove.duplicates = T, filters = list(), ...) {
 #' @export
 GetDir <- function(path, ext = "LMD", dataset = "", ...) {
   lfunc <- CreateLapply(...)
-  message("Listing files")
+  # message("Listing files")
   filelist <- list.files(path, pattern = ext, full.names = TRUE, recursive = TRUE)
-  message("Regexing files")
+  # message("Regexing files")
   f <- lfunc(filelist, function(x) {
          r <- regexec("^.*/(\\w+)/(\\d+-\\d+)-(\\w+) CLL 9F (\\d+).*.LMD$", x, perl = TRUE)
          if ("-1" %in% r) {
@@ -81,7 +81,7 @@ GetDir <- function(path, ext = "LMD", dataset = "", ...) {
               dataset = dataset)
          return(fe)
   })
-  message("Choosing correct files")
+  # message("Choosing correct files")
   f <- f[!is.na(f)]
   return(f)
 }
