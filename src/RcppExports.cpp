@@ -18,22 +18,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cGetDir
-SEXP cGetDir(String dir_path, String dataset);
-RcppExport SEXP _flowProc_cGetDir(SEXP dir_pathSEXP, SEXP datasetSEXP) {
+// cppGetDir
+SEXP cppGetDir(String dir_path, String dataset);
+RcppExport SEXP _flowProc_cppGetDir(SEXP dir_pathSEXP, SEXP datasetSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< String >::type dir_path(dir_pathSEXP);
     Rcpp::traits::input_parameter< String >::type dataset(datasetSEXP);
-    rcpp_result_gen = Rcpp::wrap(cGetDir(dir_path, dataset));
+    rcpp_result_gen = Rcpp::wrap(cppGetDir(dir_path, dataset));
     return rcpp_result_gen;
 END_RCPP
 }
 
+RcppExport SEXP c_get_dir(SEXP, SEXP);
+
 static const R_CallMethodDef CallEntries[] = {
     {"_flowProc_cGroupBy", (DL_FUNC) &_flowProc_cGroupBy, 3},
-    {"_flowProc_cGetDir", (DL_FUNC) &_flowProc_cGetDir, 2},
+    {"_flowProc_cppGetDir", (DL_FUNC) &_flowProc_cppGetDir, 2},
+    {"c_get_dir",           (DL_FUNC) &c_get_dir,           2},
     {NULL, NULL, 0}
 };
 

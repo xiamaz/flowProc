@@ -63,7 +63,7 @@ List cGroupBy (List input, String group_on, IntegerVector tube_nums) {
 
 //' @export
 // [[Rcpp::export]]
-SEXP cGetDir (String dir_path, String dataset) {
+SEXP cppGetDir (String dir_path, String dataset) {
 	struct dirent *files;
 	std::regex filename_regex("^(\\d+-\\d+)-(\\w+) CLL 9F (\\d+).*.LMD$");
 	std::smatch regex_match;

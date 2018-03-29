@@ -6,6 +6,6 @@
 #' @author Max Zhao
 #' @import Rcpp parallel flowCore plyr
 #' @importFrom Rcpp evalCpp
-#' @useDynLib flowProc
+#' @useDynLib flowProc, .registration = TRUE
 #' @name flowProc
 NULL

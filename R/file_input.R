@@ -28,12 +28,14 @@ ReadDatasets <- function(path, ...) {
 #' @param remove.duplicates Remove duplicate file entries.
 #' @param filters Optional filters used on slot of files.
 #' @return File matrix with specified set and no duplicates.
+#' @useDynLib flowProc, .registration = TRUE
 #' @export
-ReadDataset <- function(path, remove.duplicates = T, filters = list(), ...) {
+ReadDataset <- function(path, remove.duplicates = T, filters = list(), dataset = "", ...) {
   # entry.list <- cGetDir(path, dataset)
-  entry.list <- GetDir(path, ...)
+  # entry.list <- GetDir(path, ...)
+  entry.list <- .Call("c_get_dir", path, dataset)
 
-  if (is.null(entry.list)) {
+  if (is.null(entry.list) | length(entry.list) == 0) {
     print(sprintf("No files found in given directory %s", path))
     return(entry.list)
   }

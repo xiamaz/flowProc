@@ -10,11 +10,11 @@
 #' @param tube_nums Integer vector for tube numbers to be used.
 #' @export
 cGroupBy <- function(input, group_on, tube_nums) {
-    .Call('_flowProc_cGroupBy', PACKAGE = 'flowProc', input, group_on, tube_nums)
+    .Call(`_flowProc_cGroupBy`, input, group_on, tube_nums)
 }
 
 #' @export
-cGetDir <- function(dir_path, dataset) {
-    .Call('_flowProc_cGetDir', PACKAGE = 'flowProc', dir_path, dataset)
+cppGetDir <- function(dir_path, dataset) {
+    .Call(`_flowProc_cppGetDir`, dir_path, dataset)
 }
 
