@@ -1,3 +1,15 @@
+#' Read jSON info file with additional case metainformation
+#'
+#' Create list:groups->list:case->S4:flowData
+#'
+#' @export
+ReadDatasetJson <- function(json.path) {
+  json.data <- jsonlite::fromJSON(json.path)
+  flow.list <- JsonToS4(json.data)
+  return(flow.list)
+}
+
+
 #' Read all datasets
 #'
 #' Data used by flowProc has to be organized into a specific hierarchy.

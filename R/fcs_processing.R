@@ -39,7 +39,7 @@ ProcessSingle <- function(file.entry, selected.channels, trans = "logicle", remo
 #' Load single fcs file into a file matrix
 #'
 #' @export
-ReadFile <- function(flow.entry, simple.marker.names = FALSE, dataset = 1, ...) {
+ReadFile <- function(flow.entry, simple.marker.names = F, dataset = 1, ...) {
   flow.entry@fcs <- flowCore::read.FCS(flow.entry@filepath, dataset = dataset)
   # use simplified markernames, this might be an inappropriate simplification
   m <- flowCore::markernames(flow.entry@fcs)

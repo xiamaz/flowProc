@@ -23,6 +23,38 @@ CreateLapply <- function(thread.num = 1, ...) {
 }
 
 
+#' Convert a single case row to a list of S4 objects for this case. Each
+#' Filepath will be converted to a separate object.
+RowToS4 <- function(case.row) {
+  infiltration <- as.numeric(case.row[["infiltration"]])
+  if (is.na(infiltration)) {
+    message(infiltration, " ", case.row[["infiltration"]])
+  }
+  dest.s4.fun <- function(dest.row) {
+    s4.obj <- FlowEntry(awspath = dest.row[["path"]],
+                        material = dest.row[["material"]],
+                        tube_set = as.numeric(dest.row[["tube"]]),
+                        group = case.row[["cohort"]],
+                        label = case.row[["id"]],
+                        infiltration = infiltration,
+                        diagnosis = case.row[["diagnosis"]])
+    return(s4.obj)
+  }
+  case.list <- apply(case.row[["destpaths"]], 1, dest.s4.fun)
+}
+
+
+#' Convert list of data from json to S4 objects
+#' Keep grouping of cohort - case-id - s4-objs
+JsonToS4 <- function(json.list) {
+  group.list <- lapply(json.list, function(case.table) {
+    case.list <- apply(case.table, 1, RowToS4)
+    return(case.list)
+  })
+  return(group.list)
+}
+
+
 #' S4 class representing a flowframe with additional metadata
 #'
 #' @slot filepath Path to fcs file.
@@ -36,11 +68,14 @@ CreateLapply <- function(thread.num = 1, ...) {
 FlowEntry <- setClass("FlowEntry",
      representation(
       filepath = "character",
+      awspath = "character",
       group = "character",
       label = "character",
       material = "character",
       tube_set = "numeric",
       fcs = "flowFrame",
+      infiltration = "numeric",
+      diagnosis = "character",
       dataset = "character"
       )
      )
