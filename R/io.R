@@ -18,9 +18,9 @@ GetFile <- function(filename, dirpath, ...) {
 #' functions.
 #'
 #' @export
-PutFile <- function(fileobj, filename, outpath, write.fun, ...) {
+PutFile <- function(fileobj, filename, outpath, write.fun, temp.path) {
   if (CheckS3(outpath)) {
-    UploadS3(fileobj, filename, outpath, write.fun, ...)
+    UploadS3(fileobj, filename, outpath, write.fun, temp.path)
   } else {
     dir.create(outpath, recursive = T, showWarnings = F)
     filepath <- file.path(outpath, filename)
