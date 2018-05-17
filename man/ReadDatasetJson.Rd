@@ -4,7 +4,7 @@
 \alias{ReadDatasetJson}
 \title{Read jSON info file with additional case metainformation}
 \usage{
-ReadDatasetJson(json.path, dir.path, temp.path = "")
+ReadDatasetJson(json.path, dir.path = "", temp.path = "")
 }
 \description{
 Create list:groups->list:case->S4:flowData
