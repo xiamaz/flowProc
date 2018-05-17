@@ -11,8 +11,8 @@ DownloadS3 <- function(filename, inputpath, temppath) {
   return(target.path)
 }
 
-UploadS3 <- function(fileobj, filename, outputpath, write.fun, temppath) {
-  source.path <- file.path(temppath, filename)
+UploadS3 <- function(fileobj, filename, outputpath, write.fun, tempdir) {
+  source.path <- file.path(tempdir, filename)
   target.path <- file.path(outputpath, filename)
 
   # create temporary output in temp directory
