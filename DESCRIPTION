@@ -12,6 +12,7 @@ Imports:
 	flowCore,
 	plyr,
 	Rcpp,
-	jsonlite
+	jsonlite,
+	aws.s3
 LinkingTo: Rcpp
 RoxygenNote: 6.0.1
