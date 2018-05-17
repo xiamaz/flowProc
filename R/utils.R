@@ -26,7 +26,7 @@ CreateLapply <- function(thread.num = 1, ...) {
 #' Convert a single case row to a list of S4 objects for this case. Each
 #' Filepath will be converted to a separate object.
 RowToS4 <- function(case.row, dir.path, temp.path) {
-  infiltration <- as.numeric(case.row[["infiltration"]])
+  infiltration <- as.numeric(gsub(",", ".", case.row[["infiltration"]]))
   if (is.na(infiltration)) {
     message("Parsing failure ", infiltration, " ", case.row[["infiltration"]])
   }
