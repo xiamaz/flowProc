@@ -5,7 +5,7 @@
 \title{Convert list of data from json to S4 objects
 Keep grouping of cohort - case-id - s4-objs}
 \usage{
-JsonToS4(json.list)
+JsonToS4(json.list, temp.path = "", dir.path = "")
 }
 \description{
 Convert list of data from json to S4 objects

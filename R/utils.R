@@ -25,13 +25,15 @@ CreateLapply <- function(thread.num = 1, ...) {
 
 #' Convert a single case row to a list of S4 objects for this case. Each
 #' Filepath will be converted to a separate object.
-RowToS4 <- function(case.row) {
+RowToS4 <- function(case.row, dir.path, temp.path) {
   infiltration <- as.numeric(case.row[["infiltration"]])
   if (is.na(infiltration)) {
     message(infiltration, " ", case.row[["infiltration"]])
   }
   dest.s4.fun <- function(dest.row) {
-    s4.obj <- FlowEntry(awspath = dest.row[["path"]],
+    s4.obj <- FlowEntry(temppath = temp.path,
+                        dirpath = dir.path,
+                        filepath = dest.row[["path"]],
                         material = dest.row[["material"]],
                         tube_set = as.numeric(dest.row[["tube"]]),
                         group = case.row[["cohort"]],
@@ -46,12 +48,18 @@ RowToS4 <- function(case.row) {
 
 #' Convert list of data from json to S4 objects
 #' Keep grouping of cohort - case-id - s4-objs
-JsonToS4 <- function(json.list) {
+JsonToS4 <- function(json.list, temp.path = "", dir.path = "") {
   group.list <- lapply(json.list, function(case.table) {
-    case.list <- apply(case.table, 1, RowToS4)
+    case.list <- apply(case.table, 1, function(case) {RowToS4(case, dir.path, temp.path)})
     return(case.list)
   })
   return(group.list)
+}
+
+
+#' Get Filepath from FlowEntry
+GetFilepath <- function(entry) {
+  return(GetFile(entry@filepath, entry@dirpath, entry@temppath))
 }
 
 
@@ -68,7 +76,8 @@ JsonToS4 <- function(json.list) {
 FlowEntry <- setClass("FlowEntry",
      representation(
       filepath = "character",
-      awspath = "character",
+      dirpath = "character",
+      temppath = "character",
       group = "character",
       label = "character",
       material = "character",

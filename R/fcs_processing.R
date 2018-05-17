@@ -40,7 +40,7 @@ ProcessSingle <- function(file.entry, selected.channels, trans = "logicle", remo
 #'
 #' @export
 ReadFile <- function(flow.entry, simple.marker.names = F, dataset = 1, ...) {
-  flow.entry@fcs <- flowCore::read.FCS(flow.entry@filepath, dataset = dataset)
+  flow.entry@fcs <- flowCore::read.FCS(GetFilepath(flow.entry), dataset = dataset)
   # use simplified markernames, this might be an inappropriate simplification
   m <- flowCore::markernames(flow.entry@fcs)
   curnames <- flowCore::colnames(flow.entry@fcs)
@@ -162,7 +162,7 @@ RemoveMarginal <- function(flow_entry, lower = TRUE, upper = TRUE, ...) {
 MarkerOccurences <- function(flow.entries) {
   # save colnames as vector of ones
   colmatrix <- lapply(flow.entries, function(x) {
-               fnames <- flowCore::read.FCSheader(x@filepath)[[1]]
+               fnames <- flowCore::read.FCSheader(GetFilepath(x))[[1]]
                par.names <- names(fnames)
                fnames <- fnames[par.names[grepl("\\$P\\d+S", par.names, perl = T)]]
                fnamevec <- rep(1, length(fnames))
