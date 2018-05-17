@@ -28,7 +28,7 @@ CreateLapply <- function(thread.num = 1, ...) {
 RowToS4 <- function(case.row, dir.path, temp.path) {
   infiltration <- as.numeric(case.row[["infiltration"]])
   if (is.na(infiltration)) {
-    message(infiltration, " ", case.row[["infiltration"]])
+    message("Parsing failure ", infiltration, " ", case.row[["infiltration"]])
   }
   dest.s4.fun <- function(dest.row) {
     s4.obj <- FlowEntry(temppath = temp.path,
@@ -42,15 +42,16 @@ RowToS4 <- function(case.row, dir.path, temp.path) {
                         diagnosis = case.row[["diagnosis"]])
     return(s4.obj)
   }
-  case.list <- apply(case.row[["destpaths"]], 1, dest.s4.fun)
+  case.list <- lapply(case.row[["destpaths"]], dest.s4.fun)
+  return(case.list)
 }
 
 
 #' Convert list of data from json to S4 objects
 #' Keep grouping of cohort - case-id - s4-objs
-JsonToS4 <- function(json.list, temp.path = "", dir.path = "") {
-  group.list <- lapply(json.list, function(case.table) {
-    case.list <- apply(case.table, 1, function(case) {RowToS4(case, dir.path, temp.path)})
+JsonToS4 <- function(json.list, dir.path = "", temp.path = "") {
+  group.list <- lapply(json.list, function(cases) {
+    case.list <- lapply(cases, function(case) {RowToS4(case, dir.path, temp.path)})
     return(case.list)
   })
   return(group.list)

@@ -1,6 +1,9 @@
 DownloadS3 <- function(filename, inputpath, temppath) {
   s3.path <- file.path(inputpath, filename)
   target.path <- file.path(temppath, filename)
+  if (file.exists(target.path)) {
+    return(target.path)
+  }
   # create possible intermediary directories
   intermed.dirs <- dirname(target.path)
   dir.create(intermed.dirs, recursive = T, showWarnings = F)
@@ -8,9 +11,9 @@ DownloadS3 <- function(filename, inputpath, temppath) {
   return(target.path)
 }
 
-UploadS3 <- function(fileobj, filename, outpath, write.fun, temppath) {
+UploadS3 <- function(fileobj, filename, outputpath, write.fun, temppath) {
   source.path <- file.path(temppath, filename)
-  target.path <- file.path(s3path, filename)
+  target.path <- file.path(outputpath, filename)
 
   # create temporary output in temp directory
   write.fun(fileobj, source.path)

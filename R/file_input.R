@@ -3,8 +3,8 @@
 #' Create list:groups->list:case->S4:flowData
 #'
 #' @export
-ReadDatasetJson <- function(json.path, dir.path, temp.path = "") {
-  json.data <- jsonlite::fromJSON(json.path)
+ReadDatasetJson <- function(json.path, dir.path = "", temp.path = "") {
+  json.data <- jsonlite::fromJSON(json.path, simplifyVector = F, simplifyMatrix = F, simplifyDataFrame = F)
   flow.list <- JsonToS4(json.data, dir.path, temp.path)
   return(flow.list)
 }
