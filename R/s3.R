@@ -20,3 +20,19 @@ UploadS3 <- function(fileobj, filename, outpath, write.fun, temppath) {
 CheckS3 <- function(path) {
   return(grepl("s3://", path, ignore.case = T))
 }
+
+S3GetFiles <- function(path, max = Inf) {
+  matches <- regexec("s3://([[:alnum:]-_]+)/?(.*)?", path, ignore.case = T, perl = T)
+  result <- regmatches(path, matches)[[1]]
+  bucket <- result[[2]]
+  prefix <- result[[3]]
+  response <- aws.s3::get_bucket(bucket, prefix, max = max)
+
+  files <- lapply(response, function(obj) {obj[["Key"]]})
+  return(files)
+}
+
+S3PathExists <- function(path) {
+  existing <- S3GetFiles(path, max=1)
+  return(length(existing) > 0)
+}

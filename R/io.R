@@ -27,3 +27,38 @@ PutFile <- function(fileobj, filename, outpath, write.fun, ...) {
     write.fun(fileobj, filepath)
   }
 }
+
+#' Check if path exists
+#'
+#' Supports remote addresses. Executes given functions and return boolean truth
+#' values.
+#'
+#' @export
+PathExists <- function(path, true.fun = NULL, false.fun = NULL, ...) {
+  if (CheckS3(path)) {
+    valid <- S3PathExists(path)
+  } else {
+    valid <- file.exists(path)
+  }
+  # return function result or validity of path
+  if (!is.null(true.fun) && valid) {
+    return(true.fun(...))
+  } else if (!is.null(false.fun) && (!valid)) {
+    return(false.fun(...))
+  } else {
+    return(valid)
+  }
+}
+
+#' Get filenames in path
+#'
+#' Get all filenames in path as list. Accepts remote urls too.
+#'
+#' @export
+GetFiles <- function(path) {
+  if (CheckS3(path)) {
+    return(S3GetFiles(path))
+  } else {
+    list.files(path)
+  }
+}
