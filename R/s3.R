@@ -2,8 +2,10 @@ DownloadS3 <- function(filename, inputpath, temppath) {
   s3.path <- file.path(inputpath, filename)
   target.path <- file.path(temppath, filename)
   if (file.exists(target.path)) {
+    message(filename, " found in cache")
     return(target.path)
   }
+  message(filename, " download to cache")
   # create possible intermediary directories
   intermed.dirs <- dirname(target.path)
   dir.create(intermed.dirs, recursive = T, showWarnings = F)

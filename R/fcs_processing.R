@@ -77,23 +77,6 @@ FcsSelectMarkers <- function(fcs_entry, selected.markers, ...) {
 }
 
 
-#' Exclude flowframes without common channels.
-#'
-#' @param fcs_info File matrix with loaded flowframes.
-#' @param threshold Minimum ratio for marker to be common.
-#' @return File matrix with removed channels.
-#' @examples
-#' t = FilterCommonChannels(files[1:10], 0.8)
-#' t = FilterCommonChannels(files, 0.8, cluster)
-#' @export
-FilterCommonChannels <- function(flow_entries, ...) {
-  lfunc <- CreateLapply(...)
-  loaded.entries <- lfunc(flow_entries, function(x) { read_file(x) })
-
-  return(FilterChannelMajority(loaded.entries, ...))
-}
-
-
 #' Return flowframes with common channels and selected channels.
 #'
 #' @param flow.entries File matrix with loaded flowframes.
@@ -109,6 +92,45 @@ FilterChannelMajority <- function(flow.entries, threshold = 0.9, ...) {
   selected.matrix <- marker.matrix[, selected.markers]
   selected.files <- flow.entries[rowSums(selected.matrix) == length(selected.markers)]
   return(list(entries = selected.files, markers = selected.markers))
+}
+
+
+#' Get distribution of marker channels across whole dataset.
+#'
+#' @param flow_entries Flow entry list with loaded fcs files.
+#' @return Table with occurrences of marker channels as 1/0 matrix.
+#' @examples
+#' t = marker_occurrences(files, cluster)
+#' t = marker_occurrences(files[1:10])
+#' @export
+MarkerOccurences <- function(flow.entries) {
+  # save colnames as vector of ones
+  colmatrix <- lapply(flow.entries, function(x) {
+               fnames <- x@fcsmarkers
+               fnamevec <- rep(1, length(fnames))
+               names(fnamevec) <- fnames
+               return(t(fnamevec))
+  })
+  colmatrix <- plyr::rbind.fill.matrix(colmatrix)
+  colmatrix[is.na(colmatrix)] <- 0
+  return(colmatrix)
+}
+
+
+#' Transform flowcytometric marker channels.
+#'
+#' Apply a transformation function to the channels specified by the selection function.
+#'
+#' @param flowframe FCS Flowframe.
+#' @param selection.function Selection function to determine transform application, which returns for an input name either TRUE or FALSE
+#' @param transform.function Transformation function, which will be applied.
+#' @return File Matrix with transformed flow frames.
+TransformChannels <- function(flowframe, selection.function, transform.function, ...) {
+  markernames <- flowCore::colnames(flowframe)
+  transform.markers <- markernames[selection.function(markernames)]
+  transform.list <- flowCore::transformList(transform.markers, transform.function)
+  flowframe <- flowCore::transform(flowframe, transform.list)
+  return(flowframe)
 }
 
 
@@ -150,43 +172,4 @@ RemoveMarginal <- function(flow_entry, lower = TRUE, upper = TRUE, ...) {
     flowCore::exprs(flow_entry@fcs) <- ex
   }
   return(flow_entry)
-}
-#' Get distribution of marker channels across whole dataset.
-#'
-#' @param flow_entries Flow entry list with loaded fcs files.
-#' @return Table with occurrences of marker channels as 1/0 matrix.
-#' @examples
-#' t = marker_occurrences(files, cluster)
-#' t = marker_occurrences(files[1:10])
-#' @export
-MarkerOccurences <- function(flow.entries) {
-  # save colnames as vector of ones
-  colmatrix <- lapply(flow.entries, function(x) {
-               fnames <- flowCore::read.FCSheader(GetFilepath(x))[[1]]
-               par.names <- names(fnames)
-               fnames <- fnames[par.names[grepl("\\$P\\d+S", par.names, perl = T)]]
-               fnamevec <- rep(1, length(fnames))
-               names(fnamevec) <- fnames
-               return(t(fnamevec))
-  })
-  colmatrix <- plyr::rbind.fill.matrix(colmatrix)
-  colmatrix[is.na(colmatrix)] <- 0
-  return(colmatrix)
-}
-
-
-#' Transform flowcytometric marker channels.
-#'
-#' Apply a transformation function to the channels specified by the selection function.
-#'
-#' @param flowframe FCS Flowframe.
-#' @param selection.function Selection function to determine transform application, which returns for an input name either TRUE or FALSE
-#' @param transform.function Transformation function, which will be applied.
-#' @return File Matrix with transformed flow frames.
-TransformChannels <- function(flowframe, selection.function, transform.function, ...) {
-  markernames <- flowCore::colnames(flowframe)
-  transform.markers <- markernames[selection.function(markernames)]
-  transform.list <- flowCore::transformList(transform.markers, transform.function)
-  flowframe <- flowCore::transform(flowframe, transform.list)
-  return(flowframe)
 }

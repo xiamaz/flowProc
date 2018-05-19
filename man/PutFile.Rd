@@ -4,7 +4,7 @@
 \alias{PutFile}
 \title{Automatically check if outputpath needs uploading to S3}
 \usage{
-PutFile(fileobj, filename, outpath, write.fun, ...)
+PutFile(fileobj, filename, outpath, write.fun, temp.path)
 }
 \description{
 Use write function to put a file object to a destination. Check automatically
